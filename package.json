@@ -4,7 +4,7 @@
   "description": "Convert nginx conf strings to JSON and back!",
   "main": "index",
   "repository": {
-    "url": "git+https://github.com/webantic/ngnix-config-parser.git"
+    "url": "git+https://github.com/webantic/nginx-config-parser.git"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec",
