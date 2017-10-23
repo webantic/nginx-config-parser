@@ -1,0 +1,11 @@
+{
+  "root": true,
+  "extends": [
+    "eslint:recommended",
+    "standard"
+  ],
+  "rules": {
+    "no-extra-semi": "error",
+    "no-debugger": 0
+  }
+}

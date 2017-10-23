@@ -1,0 +1,35 @@
+{
+  "name": "@webantic/nginxconfparser",
+  "version": "1.0.0",
+  "description": "Convert nginx conf strings to JSON and back!",
+  "main": "index",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --reporter spec",
+    "release": "env $(cat .gh_token | xargs) npm-github-release"
+  },
+  "keywords": [
+    "nginx",
+    "conf",
+    "config",
+    "json",
+    "convert",
+    "conversion",
+    "parser",
+    "parse"
+  ],
+  "author": "Webantic",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-eslint": "^8.0.1",
+    "babel-preset-env": "^1.6.1",
+    "chai": "^3.5.0",
+    "eslint": "^4.9.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "mocha": "^3.0.2"
+  },
+  "dependencies": {}
+}
