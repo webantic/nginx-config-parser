@@ -2,7 +2,8 @@
 
 ```js
 
-var parser = require('@webantic/nginx-config-parser')
+var ConfigParser = require('@webantic/nginx-config-parser')
+var parser = new ConfigParser()
 
 // parse straight from file
 var config = parser.readConfigFile('/path/to/file.conf')
