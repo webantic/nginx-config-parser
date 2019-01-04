@@ -35,5 +35,7 @@
     "mocha": "^3.0.2",
     "npm-github-release": "^0.8.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "glob": "^7.1.3"
+  }
 }
