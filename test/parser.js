@@ -154,6 +154,4 @@ describe('parse', () => {
   })
 })
 
-
-
 const isOdd = (val) => val % 2
