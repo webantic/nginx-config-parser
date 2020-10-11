@@ -124,6 +124,29 @@ describe('toConf', () => {
     let result = parser.toConf(json);
     result.should.not.contain('[object Object]');
   });
+
+  it('does not contain };', () => {
+    let json = parser.toJSON(`http { 
+      server {
+          include mime.types;
+          listen 80 default_server;
+          server_name localhost;
+          location / {
+              root /app/www/;
+              index index.html;
+          }
+      }
+      server { 
+          listen 8080;  
+          location / { 
+              root /dir/name/
+              index index.html;
+          } 
+      }
+    }`);
+    let result = parser.toConf(json);
+    result.should.not.contain('};');
+  })
 })
 
 describe('parse', () => {
