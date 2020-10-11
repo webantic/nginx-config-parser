@@ -88,7 +88,7 @@ describe('toJSON', () => {
     result['upstream my_upstream'].server.should.include('127.0.0.1:3001')
     result['upstream my_upstream'].server.should.include('127.0.0.1:3002')
   })
-})
+});
 
 describe('toConf', () => {
   it('outputs key/value pairs on one line', () => {
@@ -102,6 +102,28 @@ describe('toConf', () => {
     result.should.contain('server {')
     result.should.contain('}')
   })
+  it('should not contain [object Object]', () => {
+    let json = parser.toJSON(`http { 
+      server {
+          include mime.types;
+          listen 80 default_server;
+          server_name localhost;
+          location / {
+              root /app/www/;
+              index index.html;
+          }
+      }
+      server { 
+          listen 8080;  
+          location / { 
+              root /dir/name/
+              index index.html;
+          } 
+      }
+    }`);
+    let result = parser.toConf(json);
+    result.should.not.contain('[object Object]');
+  });
 })
 
 describe('parse', () => {
@@ -131,5 +153,7 @@ describe('parse', () => {
     }
   })
 })
+
+
 
 const isOdd = (val) => val % 2
