@@ -1,6 +1,6 @@
 {
   "name": "@webantic/nginx-config-parser",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Convert nginx conf strings to JSON and back!",
   "main": "index",
   "repository": {
