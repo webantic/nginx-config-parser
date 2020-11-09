@@ -88,7 +88,43 @@ describe('toJSON', () => {
     result['upstream my_upstream'].server.should.include('127.0.0.1:3001')
     result['upstream my_upstream'].server.should.include('127.0.0.1:3002')
   })
-});
+
+  it('should handle multiple blocks with the same name', () => {
+    const configString = ['server {',
+      '  location / {',
+      '    proxy_pass http://127.0.0.1:3000;',
+      '  }',
+      '}',
+      'server {',
+      '  server_name _;',
+      '  location / {',
+      '    proxy_pass http://127.0.0.1:3000;',
+      '  }',
+      '  location / {',
+      '    proxy_pass http://127.0.0.1:3000;',
+      '  }',
+      '}',
+      'server {',
+      '  server_name _;',
+      '  location / {',
+      '    proxy_pass http://127.0.0.1:3000;',
+      '  }',
+      '  location / {',
+      '    proxy_pass http://127.0.0.1:3000;',
+      '  }',
+      '}'].join('\n')
+    const result = parser.toJSON(configString)
+    result.server.should.be.an.instanceof(Array)
+    result.server.length.should.equal(3)
+    result.server.should.not.have.property('server')
+    result.server.should.not.have.property('location')
+    result.server[0]['location /'].should.not.be.an.instanceof(Array)
+    result.server[1]['location /'].should.be.an.instanceof(Array)
+    result.server[1]['location /'].length.should.equal(2)
+    result.server[2]['location /'].should.be.an.instanceof(Array)
+    result.server[2]['location /'].length.should.equal(2)
+  })
+})
 
 describe('toConf', () => {
   it('outputs key/value pairs on one line', () => {
