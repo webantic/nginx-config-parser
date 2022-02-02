@@ -72,3 +72,31 @@ console.log(JSON.stringify(parsed, null, 2))
 //   }
 // }
 ```
+
+### Multiline
+
+When parsing multiline blocks, the behaviour is non-deterministic. Effectively, this means that your values will be collapsed onto a single line when flipping to JSON and back to conf.
+
+```js
+const configString = `
+http {
+  proxy_cache_path /var/cache/nginx/users
+    keys_zone=users:1m
+    levels=2
+    use_temp_path=off
+    inactive=1d
+    max_size=16m;
+}
+`;
+
+const json = parser.toJSON(configString);
+
+const expectedOutput = `
+http {
+  proxy_cache_path /var/cache/nginx/users keys_zone=users:1m levels=2 use_temp_path=off inactive=1d max_size=16m;
+}
+`;
+
+parser.toConf(json) === expectedOutput; // true
+```
+
