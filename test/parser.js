@@ -1,7 +1,8 @@
 'use strict'
+/* global it, describe */
 
 const chai = require('chai')
-const should = chai.should()
+chai.should()
 
 const Parser = require('../lib/parser')
 const parser = new Parser()
@@ -9,47 +10,52 @@ const parser = new Parser()
 describe('toJSON', () => {
   it('stores directives as key/value pairs', () => {
     const configString = 'listen 80;'
-    parser.toJSON(configString).should.deep.equal({listen: '80'})
+    parser.toJSON(configString).should.deep.equal({ listen: '80' })
   })
 
   it('can handle directives with no value', () => {
     const configString = 'ip_hash;'
-    parser.toJSON(configString).should.deep.equal({ip_hash: ''})
+    parser.toJSON(configString).should.deep.equal({ ip_hash: '' })
   })
 
   it('should convert blocks to sub-objects', () => {
     const configString = ['server {',
       '}'].join('\n')
-    parser.toJSON(configString).should.deep.equal({server: {}})
+    parser.toJSON(configString).should.deep.equal({ server: {} })
   })
 
   it('should support dots in keys (like if)', () => {
-    const configString = ['server {',
-      'if ($host = example.example.com) {',
-      'return 301 https://$host$request_uri;',
-      '}',
-      'server_name example.example.com;',
-      '}'].join('\n')
-    parser.toJSON(configString).should.deep.equal({server: {
-      'if ($host = example.example.com)': {
-        'return': '301 https://$host$request_uri'
-      },
-      'server_name': 'example.example.com'
-    }})
+    const configString = [
+      'server {',
+      '    if ($host = example.example.com) {',
+      '        return 301 https://$host$request_uri;',
+      '    }',
+      '    server_name example.example.com;',
+      '}'
+    ].join('\n')
+
+    parser.toJSON(configString).should.deep.equal({
+      server: {
+        'if ($host = example.example.com)': {
+          return: '301 https://$host$request_uri'
+        },
+        server_name: 'example.example.com'
+      }
+    })
   })
 
   it('should support nested directives', () => {
     const configString = ['server {',
       '  listen 443;',
       '}'].join('\n')
-    parser.toJSON(configString).should.deep.equal({server: {listen: '443'}})
+    parser.toJSON(configString).should.deep.equal({ server: { listen: '443' } })
   })
 
   it('should support comment on same line as property line', () => {
     const configString = ['server {',
       '  listen 443; # Managed by cert',
       '} # Managed by cert'].join('\n')
-    parser.toJSON(configString).should.deep.equal({server: {listen: '443'}})
+    parser.toJSON(configString).should.deep.equal({ server: { listen: '443' } })
   })
 
   it('should support deep nesting', () => {
@@ -58,8 +64,9 @@ describe('toJSON', () => {
       '    proxy_pass http://127.0.0.1:3000;',
       '  }',
       '}'].join('\n')
-    parser.toJSON(configString).should.deep.equal({server: {'location /': { proxy_pass: 'http://127.0.0.1:3000' }}})
+    parser.toJSON(configString).should.deep.equal({ server: { 'location /': { proxy_pass: 'http://127.0.0.1:3000' } } })
   })
+
   it('should support multiple same-parent nesting', () => {
     const configString = ['server {',
       '  location / {',
@@ -70,10 +77,12 @@ describe('toJSON', () => {
       '  server_name _;',
       '}'].join('\n')
 
-    parser.toJSON(configString).should.deep.equal({server: [
-      {'location /': { proxy_pass: 'http://127.0.0.1:3000' }},
-      {server_name: '_'}
-    ]})
+    parser.toJSON(configString).should.deep.equal({
+      server: [
+        { 'location /': { proxy_pass: 'http://127.0.0.1:3000' } },
+        { server_name: '_' }
+      ]
+    })
   })
 
   it('should store all values for same-named directives', () => {
@@ -124,22 +133,53 @@ describe('toJSON', () => {
     result.server[2]['location /'].should.be.an.instanceof(Array)
     result.server[2]['location /'].length.should.equal(2)
   })
+
+  it('should handle multiline values', () => {
+    const configString = [
+      'http {',
+      '  proxy_cache_path /var/cache/nginx/users',
+      '    keys_zone=users:1m',
+      '    levels=2',
+      '    use_temp_path=off',
+      '    inactive=1d',
+      '    max_size=16m;',
+      '}'
+    ].join('\n')
+
+    parser.toJSON(configString).should.deep.equal({
+      http: {
+        proxy_cache_path: '/var/cache/nginx/users keys_zone=users:1m levels=2 use_temp_path=off inactive=1d max_size=16m'
+      }
+    })
+  })
+
+  it('should handle dotted keys', () => {
+    const configString = [
+      'geo $limited {',
+      '    default 1;',
+      '    10.0.0.0/8 0;',
+      '}'
+    ].join('\n')
+
+    parser.toJSON(configString).should.deep.equal({ 'geo $limited': { default: '1', '10.0.0.0/8': '0' } })
+  })
 })
 
 describe('toConf', () => {
   it('outputs key/value pairs on one line', () => {
-    const json = {listen: '80'}
+    const json = { listen: '80' }
     parser.toConf(json).should.equal('listen    80;\n')
   })
 
   it('converts objects to config blocks', () => {
-    const json = {server: {}}
+    const json = { server: {} }
     const result = parser.toConf(json)
     result.should.contain('server {')
     result.should.contain('}')
   })
+
   it('should not contain [object Object]', () => {
-    let json = parser.toJSON(`http { 
+    const json = parser.toJSON(`http { 
       server {
           include mime.types;
           listen 80 default_server;
@@ -156,13 +196,13 @@ describe('toConf', () => {
               index index.html;
           } 
       }
-    }`);
-    let result = parser.toConf(json);
-    result.should.not.contain('[object Object]');
-  });
+    }`)
+    const result = parser.toConf(json)
+    result.should.not.contain('[object Object]')
+  })
 
   it('does not contain };', () => {
-    let json = parser.toJSON(`http { 
+    const json = parser.toJSON(`http { 
       server {
           include mime.types;
           listen 80 default_server;
@@ -179,21 +219,32 @@ describe('toConf', () => {
               index index.html;
           } 
       }
-    }`);
-    let result = parser.toConf(json);
-    result.should.not.contain('};');
+    }`)
+    const result = parser.toConf(json)
+    result.should.not.contain('};')
+  })
+
+  it('should handle dotted keys', () => {
+    const json = { 'geo $limited': { default: '1', '10.0.0.0/8': '0' } }
+    const result = parser.toConf(json)
+    result.should.equal([
+      'geo $limited {',
+      '    default       1;',
+      '    10.0.0.0/8    0;',
+      '}\n\n'
+    ].join('\n'))
   })
 })
 
 describe('parse', () => {
   it('should be reversable', () => {
-    const json = {listen: '80'}
+    const json = { listen: '80' }
     const configString = parser.parse(json)
     parser.parse(configString).should.deep.equal(json)
   })
 
   it('should be repeatable', () => {
-    const originalJson = {listen: '80'}
+    const originalJson = { listen: '80' }
     let json = originalJson
     const originalConfigString = parser.parse(json)
     let configString = originalConfigString
