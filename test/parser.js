@@ -60,6 +60,7 @@ describe('toJSON', () => {
       '}'].join('\n')
     parser.toJSON(configString).should.deep.equal({server: {'location /': { proxy_pass: 'http://127.0.0.1:3000' }}})
   })
+
   it('should support multiple same-parent nesting', () => {
     const configString = ['server {',
       '  location / {',
@@ -124,6 +125,36 @@ describe('toJSON', () => {
     result.server[2]['location /'].should.be.an.instanceof(Array)
     result.server[2]['location /'].length.should.equal(2)
   })
+
+  it('should handle multiline values', () => {
+    const configString = [
+      'http {',
+      '  proxy_cache_path /var/cache/nginx/users',
+      '    keys_zone=users:1m',
+      '    levels=2',
+      '    use_temp_path=off',
+      '    inactive=1d',
+      '    max_size=16m;',
+      '}'
+    ].join('\n')
+
+    parser.toJSON(configString).should.deep.equal({
+      http: {
+        proxy_cache_path: '/var/cache/nginx/users keys_zone=users:1m levels=2 use_temp_path=off inactive=1d max_size=16m'
+      }
+    })
+  })
+
+  it('should handle dotted keys', () => {
+    const configString = [
+      'geo $limited {',
+      '    default 1;',
+      '    10.0.0.0/8 0;',
+      '}'
+    ].join('\n')
+
+    parser.toJSON(configString).should.deep.equal({ 'geo $limited': { default: '1', '10.0.0.0/8': '0' } })
+  })
 })
 
 describe('toConf', () => {
@@ -138,6 +169,7 @@ describe('toConf', () => {
     result.should.contain('server {')
     result.should.contain('}')
   })
+
   it('should not contain [object Object]', () => {
     let json = parser.toJSON(`http { 
       server {
@@ -156,10 +188,10 @@ describe('toConf', () => {
               index index.html;
           } 
       }
-    }`);
-    let result = parser.toConf(json);
-    result.should.not.contain('[object Object]');
-  });
+    }`)
+    let result = parser.toConf(json)
+    result.should.not.contain('[object Object]')
+  })
 
   it('does not contain };', () => {
     let json = parser.toJSON(`http { 
@@ -179,9 +211,20 @@ describe('toConf', () => {
               index index.html;
           } 
       }
-    }`);
-    let result = parser.toConf(json);
-    result.should.not.contain('};');
+    }`)
+    let result = parser.toConf(json)
+    result.should.not.contain('};')
+  })
+
+  it('should handle dotted keys', () => {
+    const json = { 'geo $limited': { default: '1', '10.0.0.0/8': '0' } }
+    const result = parser.toConf(json)
+    result.should.equal([
+      'geo $limited {',
+      '    default       1;',
+      '    10.0.0.0/8    0;',
+      '}\n\n'
+    ].join('\n'))
   })
 })
 
