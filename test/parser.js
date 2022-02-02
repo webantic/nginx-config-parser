@@ -25,12 +25,15 @@ describe('toJSON', () => {
   })
 
   it('should support dots in keys (like if)', () => {
-    const configString = ['server {',
-      'if ($host = example.example.com) {',
-      'return 301 https://$host$request_uri;',
-      '}',
-      'server_name example.example.com;',
-      '}'].join('\n')
+    const configString = [
+      'server {',
+      '    if ($host = example.example.com) {',
+      '        return 301 https://$host$request_uri;',
+      '    }',
+      '    server_name example.example.com;',
+      '}'
+    ].join('\n')
+
     parser.toJSON(configString).should.deep.equal({
       server: {
         'if ($host = example.example.com)': {
