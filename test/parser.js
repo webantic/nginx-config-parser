@@ -163,6 +163,18 @@ describe('toJSON', () => {
 
     parser.toJSON(configString).should.deep.equal({ 'geo $limited': { default: '1', '10.0.0.0/8': '0' } })
   })
+
+  it('should handle multiple semicolon in single line', () => {
+    // attempt to fix issue [#22](https://github.com/webantic/nginx-config-parser/issues/22)
+    const configString = [
+      'server {',
+      '    add_header Strict-Transport-Security "max-age=0; includeSubDomains" always;',
+      '}'
+    ].join('\n');
+
+    parser.toJSON(configString).should.deep.equal({server: {add_header:
+      `Strict-Transport-Security "max-age=0; includeSubDomains" always`}});
+  })
 })
 
 describe('toConf', () => {
