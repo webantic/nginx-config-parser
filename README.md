@@ -49,19 +49,7 @@ parser.readConfigFile(filePath, options)
 
 By default, the `.toJSON()` method will not attempt to resolve includes (because the module has no idea where to look for the included files when it is only supplied a conf string instead of a file path). To force the module to attempt to resolve includes, you must set `options.parseIncludes` to `true` when calling the method. If you supply a value for `options.includesRoot`, the module will use that as the base path to search in. If you do not provide a value for `options.includesRoot`, the module will attempt to resolve the files in the CWD.
 
-If a referenced include cannot be resolved, this method will throw an IncludeResolutionError. To ignore this error (which is the default behaviour in nginx), wrap your calls to the method in a `try...catch` block as follows:
-
-```js
-try {
-    parser.toJSON(confString) // or parser.parse(confString)
-} catch (ex) {
-    if (ex.name === 'IncludeResolutionError') {
-        // optionally handle this exception
-    } else {
-        // optionally handle other types of exception
-    }
-}
-```
+If a referenced include cannot be resolved, this method will throw an IncludeResolutionError. To ignore this error (which is the default behaviour in nginx), set `options.ignoreIncludeErrors` to `true`.
 
 ### Lua blocks / openresty
 
